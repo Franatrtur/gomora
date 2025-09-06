@@ -85,7 +85,7 @@
         .stats-item {
             margin: 5px 0;
             font-size: 0.9rem;
-            color: #555;
+            color: #333;
         }
         
         .success-marks {
@@ -105,28 +105,38 @@
             font-weight: bold;
             font-size: 0.9rem;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             border-bottom: 1px solid #ccc;
             padding-bottom: 3px;
         }
 
         .marks-container {
-            line-height: 1.8;
-            word-break: break-all;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px; /* Spacing between marks */
         }
 
         .mark {
-            display: inline-block;
-            margin: 0 2px;
-            color: var(--dark-gold);
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--dark-gold);
+            color: white;
+            justify-content: center;
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+            width: 28px;
+            height: 28px;
+            border: 1px solid var(--dark-gold);
+            border-radius: 50%;
             transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
         .mark:hover {
-            color: var(--shadow-gold);
-            transform: scale(1.2);
+            color: var(--dark-gold);
+            background-color: #fff;
+            transform: scale(1.1);
         }
 
         .tooltip-custom {
@@ -299,7 +309,9 @@
                     html += `<div class="marks-container">`;
                     groupedByMonth[month].forEach(success => {
                         const index = successes.indexOf(success);
-                        html += `<span class="mark" data-index="${index}">|</span>`;
+                        const date = new Date(success.timestamp);
+                        const dayOfMonth = date.getDate(); // Get the day of the month
+                        html += `<span class="mark" data-index="${index}">${dayOfMonth}</span>`; // Display the day's number
                     });
                     html += `</div></div>`;
                 });
