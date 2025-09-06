@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resist Urges</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=New+Amsterdam&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --gold: #FFD700;
+            --dark-gold: #DAA520;
+            --shadow-gold: #B8860B;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 10px;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .main-title {
+            font-family: 'New Amsterdam', sans-serif;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2c3e50;
+            font-weight: 400;
+        }
+
+        .yes-button {
+            background: linear-gradient(45deg, #ffd700, #ffc107, #ffac1c, #ff9800);
+            background-size: 400% 400%;
+            
+            --gold: #FFD700;
+            --dark-gold: #DAA520;
+            --shadow-gold: #B8860B;
+            border: 5px solid var(--dark-gold);
+            border-radius: 25px;
+            box-shadow: 
+                0 15px 30px rgba(0,0,0,0.2),
+                inset 0 3px 6px rgba(255,255,255,0.3),
+                inset 0 -3px 6px rgba(0,0,0,0.1);
+            color: white;
+            text-shadow: 1px 1px 2px black;
+            font-size: 3rem;
+            font-weight: bold;
+            padding: 40px 0;
+            width: 80vw;
+            max-width: 350px;
+            margin: 20px auto;
+            display: block;
+            animation: pulsating-gradient 4s ease infinite;
+        }
+        @keyframes pulsating-gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .stats {
+            text-align: center;
+            margin: 30px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stats-item {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+        
+        .success-marks {
+            background: rgba(255,255,255,0.8);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            margin-top: 20px;
+            min-height: 60px;
+        }
+
+        .month-group {
+            margin-bottom: 15px;
+        }
+        
+        .month-title {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 3px;
+        }
+
+        .marks-container {
+            line-height: 1.8;
+            word-break: break-all;
+        }
+
+        .mark {
+            display: inline-block;
+            margin: 0 2px;
+            color: var(--dark-gold);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .mark:hover {
+            color: var(--shadow-gold);
+            transform: scale(1.2);
+        }
+
+        .tooltip-custom {
+            position: absolute;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 1000;
+            max-width: 250px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .tooltip-custom.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 480px) {
+            .main-title {
+                font-size: 2rem;
+            }
+            
+            .yes-button {
+                height: 180px;
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 0 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="display-4 main-title" id="motivationalTitle">Good job</h1>
+        
+        <button class="btn yes-button pulse" id="yesButton">
+            YES 💪
+        </button>
+        
+        <div class="stats" id="statsSection">
+            <div class="stats-item" id="totalCount">Total successes: 0</div>
+            <div class="stats-item" id="streakInfo">Keep going!</div>
+        </div>
+        
+        <div class="success-marks" id="successMarks">
+            <div style="text-align: center; color: #888; font-style: italic;">Your journey starts here...</div>
+        </div>
+    </div>
+    
+    <div class="tooltip-custom" id="tooltip"></div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // --- CONFIGURATION ---
+            const USE_LOCAL_STORAGE = true; // Set to true to use localStorage
+            const LOCAL_STORAGE_KEY = 'urgeResistance';
+
+            // Static slogans
+            const staticSlogans = [
+                "Good job", "Be proud of yourself", "You are making your past self proud",
+                "Don't stop", "You're getting stronger", "Every victory counts",
+                "You've got this", "Stay strong", "Keep pushing forward", "You're in control",
+                "Another win", "Building better habits", "One step at a time",
+                "You're unstoppable", "Progress over perfection", "You choose your path",
+                "Strength builds strength", "You're doing amazing", "Trust the process",
+                "Victory is yours"
+            ];
+
+            // --- NEW: Sound files for successes ---
+            const successSounds = [
+                './resist1.mp3',
+                './resist2.mp3'
+                // Add more sounds here if you have them, e.g., './resisted3.mp3'
+            ];
+            
+            let successes = [];
+
+            // --- DATA STORAGE ABSTRACTION ---
+            function loadSuccesses() {
+                if (USE_LOCAL_STORAGE) {
+                    const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                    successes = storedData ? JSON.parse(storedData) : [];
+                } else {
+                    // Use a demo array if not in "production"
+                    successes = []; 
+                }
+            }
+
+            function saveSuccesses() {
+                if (USE_LOCAL_STORAGE) {
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(successes));
+                }
+                // No action needed for the demo array as it's already in memory
+            }
+
+            // --- HELPER FUNCTIONS ---
+            function getDaysBetween(date1, date2) {
+                const diffTime = Math.abs(date2 - date1);
+                return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            }
+            
+            function getTimeDifference(pastDate, currentDate) {
+                const diffMs = currentDate - pastDate;
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                if (diffDays > 0) return `${diffDays} day${diffDays > 1 ? 's' : ''}`;
+                if (diffHours > 0) return `${diffHours} hour${diffHours > 1 ? 's' : ''}`;
+                if (diffMinutes > 0) return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''}`;
+                return 'Just now';
+            }
+            
+            function generateSlogan() {
+                return staticSlogans[Math.floor(Math.random() * staticSlogans.length)];
+            }
+
+            // --- UI UPDATE FUNCTIONS ---
+            function updateTitle(slogan) {
+                $('#motivationalTitle').text(slogan);
+            }
+            
+            function updateStats() {
+                const total = successes.length;
+                $('#totalCount').text(`Total successes: ${total}`);
+                
+                if (total > 0) {
+                    const lastSuccess = new Date(successes[total - 1].timestamp);
+                    const now = new Date();
+                    const timeSince = getTimeDifference(lastSuccess, now);
+                    $('#streakInfo').text(`Last victory: ${timeSince} ago`);
+                } else {
+                    $('#streakInfo').text('Keep going!');
+                }
+            }
+            
+            function updateSuccessMarks() {
+                if (successes.length === 0) {
+                    $('#successMarks').html('<div style="text-align: center; color: #888; font-style: italic;">Your journey starts here...</div>');
+                    return;
+                }
+
+                const groupedByMonth = successes.reduce((acc, success) => {
+                    const date = new Date(success.timestamp);
+                    const monthYear = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+                    if (!acc[monthYear]) {
+                        acc[monthYear] = [];
+                    }
+                    acc[monthYear].push(success);
+                    return acc;
+                }, {});
+
+                const sortedMonths = Object.keys(groupedByMonth).sort((a, b) => new Date(b) - new Date(a));
+
+                let html = '';
+                sortedMonths.forEach(month => {
+                    html += `<div class="month-group">`;
+                    html += `<div class="month-title">${month}</div>`;
+                    html += `<div class="marks-container">`;
+                    groupedByMonth[month].forEach(success => {
+                        const index = successes.indexOf(success);
+                        html += `<span class="mark" data-index="${index}">|</span>`;
+                    });
+                    html += `</div></div>`;
+                });
+                
+                $('#successMarks').html(html);
+            }
+            
+            // --- MAIN LOGIC ---
+            function addSuccess() {
+                const now = new Date();
+
+                // --- NEW: Play a random sound ---
+                if (successSounds.length > 0) {
+                    const randomSoundIndex = Math.floor(Math.random() * successSounds.length);
+                    const soundToPlay = successSounds[randomSoundIndex];
+                    const audio = new Audio(soundToPlay);
+                    audio.play().catch(error => {
+                        // Autoplay was prevented.
+                        console.log("Audio play failed. This can happen if the user hasn't interacted with the page yet.", error);
+                    });
+                }
+                
+                const success = {
+                    timestamp: now.toISOString(),
+                    slogan: slogan,
+                    date: now.toLocaleDateString('en-US', { 
+                        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' 
+                    }),
+                    time: now.toLocaleTimeString('en-US', { 
+                        hour: '2-digit', minute: '2-digit' 
+                    })
+                };
+                
+                successes.push(success);
+                saveSuccesses();
+                
+                updateStats();
+                updateSuccessMarks();
+                
+                // Button animation
+                const button = $('#yesButton');
+                button.removeClass('pulse');
+                setTimeout(() => button.addClass('pulse'), 500);
+            }
+            
+            // --- EVENT HANDLERS ---
+            $(document).on('mouseover', '.mark', function(e) {
+                const index = $(this).data('index');
+                const success = successes[index];
+                const now = new Date();
+                const successDate = new Date(success.timestamp);
+                const daysAgo = getDaysBetween(successDate, now);
+                
+                const tooltipContent = `
+                    <strong>${success.date}</strong><br>
+                    ${success.time}<br>
+                    ${daysAgo === 0 ? 'Today' : `${daysAgo} day${daysAgo > 1 ? 's' : ''} ago`}<br>
+                    <em>"${success.slogan}"</em>
+                `;
+                
+                const tooltip = $('#tooltip');
+                const rect = this.getBoundingClientRect();
+                
+                tooltip.html(tooltipContent)
+                       .css({
+                           left: e.clientX + 15,
+                           top: e.clientY + 15
+                       })
+                       .addClass('show');
+            });
+
+            $(document).on('mouseout', '.mark', function() {
+                $('#tooltip').removeClass('show');
+            });
+            
+            $(document).click(function(e) {
+                if (!$(e.target).hasClass('mark')) {
+                    $('#tooltip').removeClass('show');
+                }
+            });
+            
+            $('#yesButton').click(addSuccess);
+            
+            // --- INITIALIZATION ---
+            function initialize() {
+                loadSuccesses();
+                updateTitle(generateSlogan());
+                updateStats();
+                updateSuccessMarks();
+            }
+
+            initialize();
+        });
+    </script>
+</body>
+</html>
